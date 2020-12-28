@@ -1,0 +1,33 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style type="text/css">
+        .login-form {
+            width: 400px;
+            margin: 50px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">
+        Login
+    </h1>
+    <div class="jumbotron login-form">
+        <form method=post action="/login">
+        <div class="form-group">
+            Username: <input class="form-control" type=text name=username>
+        </div>
+        <div class="form-group">
+           Password: <input class="form-control"  type=password name=password>
+        </div>
+        <div class="form-group">
+           <input class="btn btn-primary btn-block"  value="Login" type=submit>
+        </div>
+    </form>
+    <label>{{message or ''}}</label>
+    </div>
+</body>
+
+</html>

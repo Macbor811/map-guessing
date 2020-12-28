@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script src="../static/Bing.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="text-center">
+      <h1>Map guessing game</h1>
+  </div>
+  <div class="text-center">
+      <h2>Round {{ round_number }} of 5</h2>
+  </div>
+    <div class="d-flex justify-content-center">
+        <div id="mapWorld" style="width: 800px; height: 600px;"></div>
+    </div>
+  <div class="text-center">
+      <h3>Your guess was {{ distance }} km away from target.</h3>
+  </div>
+
+  <a class="btn btn-primary" href="/game" >Next round</a>
+
+<script>
+
+    const mapWorld = L.map('mapWorld', {
+        drawControl: true,
+        maxBoundsViscosity: 1.0
+    }).setView(L.latLng(0, 0), 1);
+
+    const bing2 = new L.BingLayer("{{ bing_key }}", {imagerySet: 'AerialWithLabelsOnDemand'});
+    mapWorld.addLayer(bing2);
+
+    const guessedCoords = L.latLng({{ guessed_coords.lat }}, {{ guessed_coords.lng }})
+    const marker = L.marker();
+    marker.setLatLng(guessedCoords).addTo(mapWorld);
+
+    const actualCoords = L.latLng({{ actual_coords.lat }}, {{ actual_coords.lng }})
+    const marker2 = L.popup();
+
+    marker2.setContent('Actual').setLatLng(actualCoords).addTo(mapWorld);
+
+    const polyline = L.polyline([guessedCoords, actualCoords], {color: 'red'}).addTo(mapWorld);
+    mapWorld.fitBounds(polyline.getBounds());
+
+</script>
+</body>
+</html>
