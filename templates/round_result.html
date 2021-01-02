@@ -35,11 +35,11 @@
     const bing2 = new L.BingLayer("{{ bing_key }}", {imagerySet: 'AerialWithLabelsOnDemand'});
     mapWorld.addLayer(bing2);
 
-    const guessedCoords = L.latLng({{ guessed_coords.lat }}, {{ guessed_coords.lng }})
+    const guessedCoords = L.latLng({{ guessed_coords.lat }}, {{ guessed_coords.lng }}).wrap()
     const marker = L.marker();
     marker.setLatLng(guessedCoords).addTo(mapWorld);
 
-    const actualCoords = L.latLng({{ actual_coords.lat }}, {{ actual_coords.lng }})
+    const actualCoords = L.latLng({{ actual_coords.lat }}, {{ actual_coords.lng }}).wrap()
     const marker2 = L.popup();
 
     marker2.setContent('Actual').setLatLng(actualCoords).addTo(mapWorld);

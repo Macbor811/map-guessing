@@ -7,28 +7,33 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
     <script src="../static/Bing.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-  <div class="text-center">
-      <h1>Map guessing game</h1>
-  </div>
-  <div class="d-flex justify-content-center">
-      <div id="mapRandom" style="width: 1200px; height: 500px;"></div>
-  </div>
-  <form method=post action="/round">
-      <input type="hidden" id="selectedCoords" name="selectedCoords">
-      <div class="d-flex justify-content-center">
-        <div id="mapWorld" style="width: 700px; height: 500px;"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="#">Map guessing</a>
+    </nav>
+    <main role="main" class="container">
+          <div class="jumbotron">
+            <div class="d-flex justify-content-center">
+          <div id="mapRandom" style="width: 1200px; height: 500px;"></div>
       </div>
-      <input class="btn btn-primary" type="submit" value="Submit">
-  </form>
-
+      <form method=post action="/round">
+          <input type="hidden" id="selectedCoords" name="selectedCoords">
+          <div class="d-flex justify-content-center">
+            <div id="mapWorld" style="width: 700px; height: 500px;"></div>
+          </div>
+          <input class="btn btn-primary" type="submit" value="Submit">
+      </form>
+      </div>
+    </main>
 <script>
+    const coords = L.latLng({{ coords.lat }}, {{ coords.lng }})
     const map = L.map('mapRandom', {
         drawControl: true,
         maxBoundsViscosity: 1.0
-    }).setView(L.latLng({{ coords.lat }}, {{ coords.lng }}), 9);
+    }).setView(coords, 9);
 
     const bing = new L.BingLayer("{{ bing_key }}", {imagerySet: 'AerialWithLabelsOnDemand'});
     map.addLayer(bing);
@@ -38,7 +43,8 @@
     map.scrollWheelZoom.disable();
     map.boxZoom.disable();
     map.keyboard.disable();
-    //$(".leaflet-control-zoom").css("visibility", "hidden");
+    $(".leaflet-control-zoom").css("visibility", "hidden");
+    L.marker().setLatLng(coords).addTo(map);
 
     const mapWorld = L.map('mapWorld', {
         drawControl: true,
