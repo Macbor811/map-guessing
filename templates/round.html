@@ -33,9 +33,11 @@
     const map = L.map('mapRandom', {
         drawControl: true,
         maxBoundsViscosity: 1.0
-    }).setView(coords, 9);
+    }).setView(coords, {{ zoom }});
 
-    const bing = new L.BingLayer("{{ bing_key }}", {imagerySet: 'AerialWithLabelsOnDemand'});
+    const imagerySet = {% if labels_enabled %} 'AerialWithLabelsOnDemand' {% else %} 'Aerial' {% endif %}
+
+    const bing = new L.BingLayer("{{ bing_key }}", {imagerySet: imagerySet});
     map.addLayer(bing);
     map.dragging.disable();
     map.touchZoom.disable();
