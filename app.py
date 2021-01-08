@@ -1,11 +1,6 @@
-import asyncio
 import re
 from functools import wraps
 
-import PIL
-import cv2
-import geotiler
-import numpy
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_bootstrap import Bootstrap
 from geopy.distance import distance
@@ -13,7 +8,8 @@ from geopy.distance import distance
 from flask_session import Session
 
 from config import Configuration
-from coordinates import random_coords, random_coords_no_ocean, Coordinates
+from coordinates import random_coords_no_ocean, Coordinates
+from session_property import SessionProperty
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -25,7 +21,7 @@ BING_KEY = Configuration().BING_KEY
 def auth_required(func):
     @wraps(func)
     def decorated(*args, **kwargs):
-        if 'user' not in session:
+        if SessionProperty.AUTH_USER.value not in session:
             return redirect(url_for('login'))
         return func(*args, **kwargs)
     return decorated
@@ -37,42 +33,74 @@ def parse_leaflet_latlng(text: str) -> Coordinates:
     return Coordinates(float(match.group(1)), float(match.group(2)))
 
 
-@app.route('/round/result')
+@app.route('/game-settings', methods=['GET', 'POST'])
 @auth_required
-def round_result():
-    actual: Coordinates = session['actual_coords']
-    guessed: Coordinates = session['guessed_coords']
+def game_settings():
+    if request.method == 'GET':
+        return render_template('game_settings.html')
+    else:
+        zoom = request.form['zoom']
+        rounds_count = request.form['roundsCount']
+        labels_enabled = 'labelsEnabled' in request.form
+
+        SessionProperty.SETTINGS_ZOOM.set(int(zoom))
+        SessionProperty.SETTINGS_LABELS_ENABLED.set(labels_enabled)
+        SessionProperty.SETTINGS_ROUNDS_COUNT.set(int(rounds_count))
+
+        return redirect(url_for('game'))
+
+
+@app.route('/round/<int:nr>/result/')
+@auth_required
+def round_result(nr: int):
+    actual: Coordinates = SessionProperty.GAME_ACTUAL_COORDS.get()
+    guessed: Coordinates = SessionProperty.GAME_GUESSED_COORDS.get()
 
     dist = round(distance(actual.to_tuple(), guessed.to_tuple()).meters / 1000, 2)
-    session['round_number'] = session.get('round_number', 0) + 1
-    session['score'] = session.get('score', 0.0) + dist
+    SessionProperty.GAME_ROUND_NUMBER.set(SessionProperty.GAME_ROUND_NUMBER.get(1) + 1)
+    SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + dist)
 
     return render_template('round_result.html',
-                           actual_coords=session['actual_coords'],
-                           guessed_coords=session['guessed_coords'],
-                           round_number=session['round_number'],
+                           actual_coords=SessionProperty.GAME_ACTUAL_COORDS.get(),
+                           guessed_coords=SessionProperty.GAME_GUESSED_COORDS.get(),
+                           round_number=nr,
+                           rounds_count=SessionProperty.SETTINGS_ROUNDS_COUNT.get(),
                            distance=dist,
                            bing_key=BING_KEY
                            )
 
 
-@app.route('/round', methods=['POST'])
+@app.route('/round/<int:nr>', methods=['GET', 'POST'])
 @auth_required
-def game_round():
-    selected_coords = request.form['selectedCoords']
-    session['guessed_coords'] = parse_leaflet_latlng(selected_coords)
-    return redirect(url_for('round_result'))
+def game_round(nr: int):
+    if request.method == 'POST':
+        selected_coords = request.form['selectedCoords']
+        SessionProperty.GAME_GUESSED_COORDS.set(parse_leaflet_latlng(selected_coords))
+        return redirect(url_for('round_result', nr=nr))
+    else:
+        coords = random_coords_no_ocean()
+        SessionProperty.GAME_ACTUAL_COORDS.set(coords)
+        zoom = SessionProperty.SETTINGS_ZOOM.get(9)
+        labels_enabled = SessionProperty.SETTINGS_LABELS_ENABLED.get(True)
+        return render_template('round.html', coords=coords, zoom=zoom, labels_enabled=labels_enabled, bing_key=BING_KEY)
 
 
 @app.route('/game')
 @auth_required
 def game():
-    if session.get('round_number', 0) >= 5:
-        session['round_number'] = 0
-        return render_template('game_result.html', score=session.get('score', 0.0))
-    coords = random_coords_no_ocean()
-    session['actual_coords'] = coords
-    return render_template('round.html', coords=coords, bing_key=BING_KEY)
+    rounds_count = SessionProperty.SETTINGS_ROUNDS_COUNT.get(5)
+    SessionProperty.SETTINGS_ROUNDS_COUNT.set(rounds_count)
+
+    if SessionProperty.GAME_ROUND_NUMBER.get(0) > rounds_count:
+        SessionProperty.GAME_ROUND_NUMBER.set(1)
+
+        SessionProperty.SETTINGS_ZOOM.clear()
+        SessionProperty.SETTINGS_LABELS_ENABLED.clear()
+        SessionProperty.SETTINGS_ROUNDS_COUNT.clear()
+
+        return render_template('game_result.html', score=SessionProperty.GAME_SCORE.get(0.0))
+    else:
+        return redirect(url_for('game_round', nr=SessionProperty.GAME_ROUND_NUMBER.get(1)))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -89,7 +117,7 @@ def login():
             return render_template('login.html', message=f'User ${username} does not exist')
         else:
             if user[1] == password:
-                session['user'] = username
+                SessionProperty.AUTH_USER.set(username)
                 if username == 'admin':
                     session['is_admin'] = True
                 else:

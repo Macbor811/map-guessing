@@ -3,39 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
     <script src="../static/Bing.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="#">Map guessing</a>
-    </nav>
-    <main role="main" class="container">
-          <div class="jumbotron">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" href="#">Map guessing</a>
+</nav>
+<main role="main" class="container">
+    <div>
+        <div class="d-flex justify-content-center">
+            <div id="mapRandom" style="width: 1200px; height: 500px;"></div>
+        </div>
+        <form method=post>
+            <input type="hidden" id="selectedCoords" name="selectedCoords">
             <div class="d-flex justify-content-center">
-          <div id="mapRandom" style="width: 1200px; height: 500px;"></div>
-      </div>
-      <form method=post action="/round">
-          <input type="hidden" id="selectedCoords" name="selectedCoords">
-          <div class="d-flex justify-content-center">
-            <div id="mapWorld" style="width: 700px; height: 500px;"></div>
-          </div>
-          <input class="btn btn-primary" type="submit" value="Submit">
-      </form>
-      </div>
-    </main>
+                <div id="mapWorld" style="width: 700px; height: 500px;"></div>
+            </div>
+            <input class="btn btn-primary" type="submit" value="Submit">
+        </form>
+    </div>
+</main>
 <script>
     const coords = L.latLng({{ coords.lat }}, {{ coords.lng }})
     const map = L.map('mapRandom', {
         drawControl: true,
         maxBoundsViscosity: 1.0
-    }).setView(coords, 9);
+    }).setView(coords, {{ zoom }});
 
-    const bing = new L.BingLayer("{{ bing_key }}", {imagerySet: 'AerialWithLabelsOnDemand'});
+    const imagerySet = {% if labels_enabled %} 'AerialWithLabelsOnDemand' {% else %} 'Aerial' {% endif %}
+
+    const bing = new L.BingLayer("{{ bing_key }}", {imagerySet: imagerySet});
     map.addLayer(bing);
     map.dragging.disable();
     map.touchZoom.disable();
@@ -51,16 +57,17 @@
         maxBoundsViscosity: 1.0
     }).setView(L.latLng(0, 0), 1);
 
-    const bing2 = new L.BingLayer("{{ bing_key }}", { imagerySet: 'Aerial' });
+    const bing2 = new L.BingLayer("{{ bing_key }}", {imagerySet: 'Aerial'});
     mapWorld.addLayer(bing2);
 
     const marker = L.marker();
-    function onMapClick(e) {
-		marker.setLatLng(e.latlng).addTo(mapWorld);
-		document.getElementById('selectedCoords').value = e.latlng.toString()
-	}
 
-	mapWorld.on('click', onMapClick);
+    function onMapClick(e) {
+        marker.setLatLng(e.latlng).addTo(mapWorld);
+        document.getElementById('selectedCoords').value = e.latlng.toString()
+    }
+
+    mapWorld.on('click', onMapClick);
 </script>
 </body>
 </html>
