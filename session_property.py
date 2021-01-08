@@ -21,4 +21,5 @@ class SessionProperty(Enum):
         session[self.value] = val
 
     def clear(self):
-        session.pop(self.value)
+        if self.value in session:
+            session.pop(self.value)
