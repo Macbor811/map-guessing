@@ -7,6 +7,7 @@ from geopy.distance import distance
 
 from flask_session import Session
 
+import coords_generator
 from config import Configuration
 from coordinates import random_coords_no_ocean, Coordinates
 from session_property import SessionProperty
@@ -78,7 +79,7 @@ def game_round(nr: int):
         SessionProperty.GAME_GUESSED_COORDS.set(parse_leaflet_latlng(selected_coords))
         return redirect(url_for('round_result', nr=nr))
     else:
-        coords = random_coords_no_ocean()
+        coords = coords_generator.get_random_coords()
         SessionProperty.GAME_ACTUAL_COORDS.set(coords)
         zoom = SessionProperty.SETTINGS_ZOOM.get(9)
         labels_enabled = SessionProperty.SETTINGS_LABELS_ENABLED.get(True)
@@ -135,5 +136,6 @@ def index():
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 sesh.init_app(app)
+coords_generator.init()
 if __name__ == '__main__':
     app.run()
