@@ -19,6 +19,9 @@ class Coordinates:
     def to_tuple(self) -> tuple[float, float]:
         return self.lat, self.lng
 
+    def __str__(self):
+        return f'({self.lat}, {self.lng})'
+
 
 def random_coords() -> Coordinates:
     lat = uniform(-LAT_RANGE, LAT_RANGE)
@@ -52,10 +55,10 @@ def random_coords_no_ocean() -> Coordinates:
         dim = (width, height)
         resized = cv.resize(img, dim, interpolation=cv.INTER_AREA)
 
-        print(resized.size)
+        # print(resized.size)
         count = countPixelsInRange(resized, [x-5 for x in WATER_COLOR], [x+5 for x in WATER_COLOR])
-        print(count)
+        # print(count)
         ratio = count / (resized.size / 3)
-        print(ratio)
+        # print(ratio)
         if ratio < 0.9:
             return coords
