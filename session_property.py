@@ -5,6 +5,7 @@ from flask import session
 class SessionProperty(Enum):
     AUTH_USER = 'user'
 
+    GAME = 'game'
     GAME_ACTUAL_COORDS = 'actual_coords'
     GAME_GUESSED_COORDS = 'guessed_coords'
     GAME_ROUND_NUMBER = 'round_number'
