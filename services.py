@@ -1,3 +1,5 @@
+from sqlalchemy import and_
+
 import coords_generator
 from database import db_session
 from models import User, Game, Coords
@@ -20,7 +22,7 @@ class GameService:
 
     def find_current_game(self, user_name: str) -> Game:
         user = user_service.find_by_name(user_name)
-        game = Game.query.filter(Game.user == user and not Game.is_finished).first()
+        game = Game.query.filter(and_(Game.user == user, Game.is_finished == False)).first()
         return game
 
     def save(self, game: Game):
@@ -44,6 +46,8 @@ class GameService:
         db_session.commit()
         return game
 
+    def get_top_games(self, n: int):
+        return Game.query.filter(and_(Game.is_finished == True, Game.is_ranked == True)).order_by(Game.score).limit(n).all()
 
 
 game_service = GameService()

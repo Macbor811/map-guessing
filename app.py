@@ -31,6 +31,7 @@ def auth_required(func):
         if SessionProperty.AUTH_USER.value not in session:
             return redirect(url_for('login'))
         return func(*args, **kwargs)
+
     return decorated
 
 
@@ -53,6 +54,7 @@ def in_game(func):
         ret = func(*args, **kwargs)
         save_game(game)
         return ret
+
     return decorated
 
 
@@ -120,7 +122,6 @@ def game_round(nr: int):
 @app.route('/game')
 @auth_required
 def game():
-
     game: Game
     if SessionProperty.GAME.value in session:
         game = SessionProperty.GAME.get()
@@ -204,10 +205,21 @@ def logout():
     return redirect(url_for('login'))
 
 
+class Entry:
+    def __init__(self, no: int, username: str, score: float):
+        self.no = no
+        self.username = username
+        self.score = score
+
+
 @app.route('/')
 @auth_required
 def index():
-    return render_template('index.html')
+    games = game_service.get_top_games(n=20)
+
+    entries = [Entry(no=i+1, username=game.user.name, score=game.score) for i, game in enumerate(games)]
+
+    return render_template('index.html', entries=entries)
 
 
 @app.teardown_appcontext
