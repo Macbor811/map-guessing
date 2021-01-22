@@ -3,29 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
-    <script src="../static/Bing.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-  <h1>Hello, Bootstrap</h1>
-  <div id="mapid" style="width: 1200px; height: 800px;"></div>
-<script>
-	var map = L.map('mapid', {drawControl: true, maxBoundsViscosity: 1.0}).setView(L.latLng({{ coords.lat }}, {{ coords.lng }}), 9);
-
-    var bing = new L.BingLayer("{{ bing_key }}", { imagerySet: 'AerialWithLabelsOnDemand' });
-    map.addLayer(bing);
-
-	var popup = L.popup();
-	function onMapClick(e) {
-		popup
-			.setLatLng(e.latlng)
-			.setContent("You clicked the map at " + e.latlng.toString())
-			.openOn(map);
-	}
-
-	map.on('click', onMapClick);
-
-</script>
+    <div class="text-center">
+        <h1>Map guessing game</h1>
+    </div>
+    <a class="btn btn-primary" href="/game">Start game</a>
+    <a class="btn btn-primary" href="/game-settings">Custom game</a>
+    <a class="btn btn-primary" href="/logout">Log out</a>
+    <table class="table table-striped">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">User</th>
+      <th scope="col">Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+        <tr>
+          <th scope="row">{{ entry.no }}</th>
+          <td>{{ entry.username }}</td>
+          <td>{{ entry.score }}</td>
+        </tr>
+    {% endfor %}
+  </tbody>
+    </table>
 </body>
 </html>

@@ -6,17 +6,21 @@ import numpy
 import numpy as np
 import cv2 as cv
 
-LAT_RANGE = 90.0
+LAT_RANGE = 80.0
 LNG_RANGE = 180.0
 
 
 class Coordinates:
-    lat: float
-    lng: float
 
     def __init__(self, lat: float, lng: float):
         self.lat = lat
         self.lng = lng
+
+    def to_tuple(self) -> tuple[float, float]:
+        return self.lat, self.lng
+
+    def __str__(self):
+        return f'({self.lat}, {self.lng})'
 
 
 def random_coords() -> Coordinates:
@@ -25,14 +29,13 @@ def random_coords() -> Coordinates:
     return Coordinates(round(lat, 3), round(lng, 3))
 
 
-def countPixelsInRange(img, min, max):
+def countPixelsInRange(img: np.ndarray, min: list[int], max: list[int]) -> int:
     dst = cv.inRange(img, np.array(min, np.uint8), np.array(max, np.uint8))
     count = cv.countNonZero(dst)
     return count
 
 
-
-def random_coords_no_ocean():
+def random_coords_no_ocean() -> Coordinates:
 
     WATER_COLOR = [223, 211, 170]
 
@@ -52,11 +55,10 @@ def random_coords_no_ocean():
         dim = (width, height)
         resized = cv.resize(img, dim, interpolation=cv.INTER_AREA)
 
-        print(resized.size)
+        # print(resized.size)
         count = countPixelsInRange(resized, [x-5 for x in WATER_COLOR], [x+5 for x in WATER_COLOR])
-        print(count)
+        # print(count)
         ratio = count / (resized.size / 3)
-        print(ratio)
+        # print(ratio)
         if ratio < 0.9:
             return coords
-
