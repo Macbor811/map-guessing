@@ -16,7 +16,21 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
-    <a class="navbar-brand" href="/">Map guessing</a>
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class="navbar-brand" href="/">Map guessing</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+            <a class="nav-link disabled" id="time" style="color: white">31</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item ">
+            <a class="nav-link" href="/logout">Logout</a>
+        </li>
+    </ul>
 </nav>
 <main role="main" class="container">
     <div>
@@ -33,7 +47,7 @@
   padding: 10px;
   z-index: 500;
     opacity: 0.7">Place your guess</div>
-                    <input class="btn btn-primary" id="submitButton" type="submit" value="Submit" style="display: none; position: absolute;
+                    <input class="btn btn-primary" id="submitButton" onclick="event.stopPropagation()" type="submit" value="Submit" style="display: none; position: absolute;
   bottom: 20px;
   right: 20px;
   padding: 10px;
@@ -80,6 +94,29 @@
     }
 
     mapWorld.on('click', onMapClick);
+
+    function startTimer(duration, display) {
+        var timer = duration, minutes, seconds;
+        setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.text(minutes + ":" + seconds);
+
+            if (--timer < 0) {
+                timer = duration;
+            }
+        }, 1000);
+    }
+
+        jQuery(function ($) {
+            const seconds  = 30,
+                display = $('#time');
+            startTimer(seconds, display);
+        });
 </script>
 </body>
 </html>
