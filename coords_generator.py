@@ -4,7 +4,7 @@ from threading import Thread
 
 from coordinates import Coordinates, random_coords_no_ocean
 
-_queue = Queue(maxsize=50)
+_queue = Queue(maxsize=20)
 
 
 def _generate():
