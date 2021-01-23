@@ -37,7 +37,7 @@
         <div class="d-flex justify-content-center">
             <div id="mapRandom" style="width: 1000px; height: 700px;"></div>
         </div>
-        <form method=post>
+        <form id="mainForm" method=post>
             <input type="hidden" id="selectedCoords" name="selectedCoords">
             <div class="d-flex justify-content-center">
                 <div id="mapWorld" style="width: 1000px; height: 700px;">
@@ -107,16 +107,19 @@
             display.text(minutes + ":" + seconds);
 
             if (--timer < 0) {
-                timer = duration;
+                document.getElementById('selectedCoords').value = 'no_result'
+                document.getElementById('mainForm').submit()
             }
         }, 1000);
     }
 
         jQuery(function ($) {
-            const seconds  = 30,
+            const seconds  = {{ time_limit }},
                 display = $('#time');
             startTimer(seconds, display);
         });
+
+        $.post( window.location.href + "/time" );
 </script>
 </body>
 </html>

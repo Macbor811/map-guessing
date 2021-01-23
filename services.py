@@ -36,10 +36,11 @@ class GameService:
         game.is_ranked = is_ranked
         game.current_round = 1
         game.score = 0.0
+        game.time_limit = 30
 
         for i in range(0, game.rounds_count):
             coordinates = coords_generator.get_random_coords()
-            coords = Coords(lat=coordinates.lat, lng=coordinates.lng)
+            coords = Coords(lat=coordinates.lat, lng=coordinates.lng, is_finished=False)
             game.coords.append(coords)
 
         db_session.add(game)
@@ -51,6 +52,16 @@ class GameService:
 
 
 game_service = GameService()
+
+
+class CoordsService:
+
+    def save(self, coords: Coords):
+        db_session.add(coords)
+        db_session.commit()
+
+
+coords_service = CoordsService()
 
 # game = game_service.find_current_game(SessionProperty.AUTH_USER.get())
 #

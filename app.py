@@ -1,4 +1,5 @@
 import re
+import time
 from functools import wraps
 from threading import local
 
@@ -13,7 +14,7 @@ from config import Configuration
 from coordinates import random_coords_no_ocean, Coordinates
 from database import db_session, init_db
 from models import User, Game
-from services import user_service, game_service
+from services import user_service, game_service, coords_service
 from session_property import SessionProperty
 
 app = Flask(__name__)
@@ -85,38 +86,63 @@ def game_settings():
 @auth_required
 @in_game
 def round_result(nr: int):
-    actual: Coordinates = SessionProperty.GAME_ACTUAL_COORDS.get()
-    guessed: Coordinates = SessionProperty.GAME_GUESSED_COORDS.get()
-
-    dist = round(distance(actual.to_tuple(), guessed.to_tuple()).meters / 1000, 2)
     SessionProperty.GAME_ROUND_NUMBER.set(SessionProperty.GAME_ROUND_NUMBER.get(1) + 1)
-    SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + dist)
+    game: Game = data.game
+    coords = game.coords[nr - 1]
+    coords.is_finished = True;
+    coords_service.save(coords)
+    if SessionProperty.IS_OVERTIME.value is True:
+        penalty_score = 10000.0
+        SessionProperty.GAME_SCORE.set(penalty_score)
+        return render_template('round_result_dnf.html', penalty_score=penalty_score)
+    else:
+        actual: Coordinates = SessionProperty.GAME_ACTUAL_COORDS.get()
+        guessed: Coordinates = SessionProperty.GAME_GUESSED_COORDS.get()
 
-    return render_template('round_result.html',
-                           actual_coords=SessionProperty.GAME_ACTUAL_COORDS.get(),
-                           guessed_coords=SessionProperty.GAME_GUESSED_COORDS.get(),
-                           round_number=nr,
-                           rounds_count=SessionProperty.SETTINGS_ROUNDS_COUNT.get(),
-                           distance=dist,
-                           bing_key=BING_KEY
-                           )
+        dist = round(distance(actual.to_tuple(), guessed.to_tuple()).meters / 1000, 2)
+
+        SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + dist)
+
+        return render_template('round_result.html',
+                               actual_coords=SessionProperty.GAME_ACTUAL_COORDS.get(),
+                               guessed_coords=SessionProperty.GAME_GUESSED_COORDS.get(),
+                               round_number=nr,
+                               rounds_count=SessionProperty.SETTINGS_ROUNDS_COUNT.get(),
+                               distance=dist,
+                               bing_key=BING_KEY
+                               )
+
+
+@app.route('/round/<int:nr>/time', methods=['POST'])
+@auth_required
+@in_game
+def send_time(nr: int):
+    game: Game = data.game
+    coords = game.coords[nr - 1]
+    coords.finish_time = time.time() + game.time_limit
+    coords_service.save(coords)
+    return ('', 200)
 
 
 @app.route('/round/<int:nr>', methods=['GET', 'POST'])
 @auth_required
 @in_game
 def game_round(nr: int):
+    game: Game = data.game
+    coords = game.coords[nr - 1]
+    if coords.finish_time is not None and coords.finish_time > time.time():
+        SessionProperty.IS_OVERTIME.set(True)
+        return redirect(url_for('round_result', nr=nr))
     if request.method == 'POST':
         selected_coords = request.form['selectedCoords']
-        SessionProperty.GAME_GUESSED_COORDS.set(parse_leaflet_latlng(selected_coords))
+        if selected_coords != 'no_result':
+            SessionProperty.GAME_GUESSED_COORDS.set(parse_leaflet_latlng(selected_coords))
         return redirect(url_for('round_result', nr=nr))
     else:
-        game: Game = data.game
-        coords = game.coords[nr - 1].to_coordinates()
-        SessionProperty.GAME_ACTUAL_COORDS.set(coords)
+        SessionProperty.GAME_ACTUAL_COORDS.set(coords.to_coordinates())
         zoom = SessionProperty.SETTINGS_ZOOM.get(9)
         labels_enabled = SessionProperty.SETTINGS_LABELS_ENABLED.get(True)
-        return render_template('round.html', coords=coords, zoom=zoom, labels_enabled=labels_enabled, bing_key=BING_KEY)
+        return render_template('round.html', coords=coords.to_coordinates(), zoom=zoom, labels_enabled=labels_enabled, bing_key=BING_KEY, time_limit=game.time_limit)
 
 
 @app.route('/game')

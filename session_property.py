@@ -10,6 +10,7 @@ class SessionProperty(Enum):
     GAME_GUESSED_COORDS = 'guessed_coords'
     GAME_ROUND_NUMBER = 'round_number'
     GAME_SCORE = 'score'
+    IS_OVERTIME = 'is_overtime'
 
     SETTINGS_ZOOM = 'zoom'
     SETTINGS_LABELS_ENABLED = 'labels_enabled'
