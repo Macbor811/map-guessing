@@ -91,10 +91,20 @@ def round_result(nr: int):
     coords = game.coords[nr - 1]
     coords.is_finished = True;
     coords_service.save(coords)
-    if SessionProperty.IS_OVERTIME.value is True:
+    now = time.time()
+    print(coords.finish_time)
+    print(now)
+
+    if coords.finish_time is not None and coords.finish_time < now:
         penalty_score = 10000.0
-        SessionProperty.GAME_SCORE.set(penalty_score)
-        return render_template('round_result_dnf.html', penalty_score=penalty_score)
+        SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + penalty_score)
+        return render_template('round_result_dnf.html',
+                               penalty_score=penalty_score,
+                               actual_coords=SessionProperty.GAME_ACTUAL_COORDS.get(),
+                               round_number=nr,
+                               rounds_count=SessionProperty.SETTINGS_ROUNDS_COUNT.get(),
+                               bing_key=BING_KEY
+                               )
     else:
         actual: Coordinates = SessionProperty.GAME_ACTUAL_COORDS.get()
         guessed: Coordinates = SessionProperty.GAME_GUESSED_COORDS.get()
@@ -130,9 +140,6 @@ def send_time(nr: int):
 def game_round(nr: int):
     game: Game = data.game
     coords = game.coords[nr - 1]
-    if coords.finish_time is not None and coords.finish_time > time.time():
-        SessionProperty.IS_OVERTIME.set(True)
-        return redirect(url_for('round_result', nr=nr))
     if request.method == 'POST':
         selected_coords = request.form['selectedCoords']
         if selected_coords != 'no_result':
