@@ -29,14 +29,16 @@ class GameService:
         db_session.add(game)
         db_session.commit()
 
-    def create_game(self, user_name: str, rounds_count=5, is_ranked=True) -> Game:
+    def create_game(self, user_name: str, rounds_count=5, time_limit=30, labels_enabled=True, zoom=9, is_ranked=True) -> Game:
         game = Game()
         game.user = user_service.find_by_name(user_name)
         game.rounds_count = rounds_count
         game.is_ranked = is_ranked
         game.current_round = 1
         game.score = 0.0
-        game.time_limit = 30
+        game.time_limit = time_limit
+        game.zoom = zoom
+        game.labels_enabled = labels_enabled
 
         for i in range(0, game.rounds_count):
             coordinates = coords_generator.get_random_coords()
@@ -62,13 +64,3 @@ class CoordsService:
 
 
 coords_service = CoordsService()
-
-# game = game_service.find_current_game(SessionProperty.AUTH_USER.get())
-#
-# if game is None:
-#     game = game_service.create_game(user_name=SessionProperty.AUTH_USER.get())
-# else:
-#     if game.is_finished:
-#         return render_template('game_result.html', score=game.score)
-#
-# return redirect(url_for('game_round', nr=game.current_round))

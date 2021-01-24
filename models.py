@@ -35,6 +35,8 @@ class Game(Base):
     is_ranked = Column(Boolean)
     score = Column(Float)
     time_limit = Column(Integer)
+    zoom = Column(Integer)
+    labels_enabled = Column(Boolean)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship('User', back_populates='games')
     coords = relationship("Coords", secondary=game_coords_association)
@@ -45,8 +47,13 @@ class Coords(Base):
     id = Column(Integer, primary_key=True)
     lat = Column(Float)
     lng = Column(Float)
+    lat_guessed = Column(Float)
+    lng_guessed = Column(Float)
     is_finished = Column(Boolean)
     finish_time = Column(Float)
 
-    def to_coordinates(self) -> Coordinates:
+    def actual_coordinates(self) -> Coordinates:
         return Coordinates(self.lat, self.lng)
+
+    def guessed_coordinates(self) -> Coordinates:
+        return Coordinates(self.lat_guessed, self.lng_guessed)

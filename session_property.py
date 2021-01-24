@@ -15,6 +15,7 @@ class SessionProperty(Enum):
     SETTINGS_ZOOM = 'zoom'
     SETTINGS_LABELS_ENABLED = 'labels_enabled'
     SETTINGS_ROUNDS_COUNT = 'rounds_count'
+    SETTINGS_TIME_LIMIT = 'time_limit'
 
     def get(self, default=None):
         return session.get(self.value, default)
