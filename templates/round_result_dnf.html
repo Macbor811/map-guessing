@@ -37,7 +37,8 @@
         <div id="mapWorld" style="width: 800px; height: 600px;"></div>
     </div>
     <div class="text-center">
-        <h3>Your guess was {{ distance }} km away from target.</h3>
+        <h3>You did not finish the round on time.</h3>
+        <h3>You receive {{ penalty_score }} points as a penalty.</h3>
         <a class="btn btn-primary" href="/game">Next round</a>
     </div>
 </main>
@@ -51,17 +52,10 @@
     const bing2 = new L.BingLayer("{{ bing_key }}", {imagerySet: 'AerialWithLabelsOnDemand'});
     mapWorld.addLayer(bing2);
 
-    const guessedCoords = L.latLng({{ guessed_coords.lat }}, {{ guessed_coords.lng }}).wrap()
-    const marker = L.marker();
-    marker.setLatLng(guessedCoords).addTo(mapWorld);
-
     const actualCoords = L.latLng({{ actual_coords.lat }}, {{ actual_coords.lng }}).wrap()
     const marker2 = L.popup();
 
     marker2.setContent('Actual').setLatLng(actualCoords).addTo(mapWorld);
-
-    const polyline = L.polyline([guessedCoords, actualCoords], {color: 'red'}).addTo(mapWorld);
-    mapWorld.fitBounds(polyline.getBounds());
 
 </script>
 </body>

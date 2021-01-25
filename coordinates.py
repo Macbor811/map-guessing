@@ -55,10 +55,8 @@ def random_coords_no_ocean() -> Coordinates:
         dim = (width, height)
         resized = cv.resize(img, dim, interpolation=cv.INTER_AREA)
 
-        # print(resized.size)
         count = countPixelsInRange(resized, [x-5 for x in WATER_COLOR], [x+5 for x in WATER_COLOR])
-        # print(count)
         ratio = count / (resized.size / 3)
-        # print(ratio)
+
         if ratio < 0.9:
             return coords
