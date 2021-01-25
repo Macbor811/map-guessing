@@ -103,7 +103,7 @@ def round_result(nr: int):
         now = time.time()
         if coords.finish_time is not None and coords.finish_time < now:
             penalty_score = 10000.0
-            SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + penalty_score)
+            game.score += penalty_score
             return render_template('round_result_dnf.html',
                                    penalty_score=penalty_score,
                                    actual_coords=SessionProperty.GAME_ACTUAL_COORDS.get(),
@@ -174,7 +174,19 @@ def game_round(nr: int):
         if coords.is_finished:
             return redirect(url_for('round_result', nr=nr))
         SessionProperty.GAME_ACTUAL_COORDS.set(coords.actual_coordinates())
-        return render_template('round.html', coords=coords.actual_coordinates(), zoom=game.zoom, labels_enabled=game.labels_enabled, bing_key=BING_KEY, time_limit=game.time_limit)
+
+        if coords.finish_time is None:
+            time_limit = game.time_limit
+        else:
+            time_limit = coords.finish_time - time.time()
+
+        return render_template('round.html',
+                               coords=coords.actual_coordinates(),
+                               zoom=game.zoom,
+                               labels_enabled=game.labels_enabled,
+                               bing_key=BING_KEY,
+                               time_limit=time_limit
+                               )
 
 
 @app.route('/game')
@@ -194,6 +206,7 @@ def game():
     if game.current_round > game.rounds_count:
         game.is_finished = True
         save_game(game)
+        SessionProperty.GAME.clear()
 
         return render_template('game_result.html', score=game.score)
     else:
@@ -265,7 +278,7 @@ class Entry:
 def index():
     games = game_service.get_top_games(n=20)
 
-    entries = [Entry(no=i+1, username=game.user.name, score=game.score) for i, game in enumerate(games)]
+    entries = [Entry(no=i+1, username=game.user.name, score=round(game.score, 2)) for i, game in enumerate(games)]
 
     return render_template('index.html', entries=entries)
 
