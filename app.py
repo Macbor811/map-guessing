@@ -37,8 +37,6 @@ def auth_required(func):
 
 
 def save_game(game: Game):
-    game.score = SessionProperty.GAME_SCORE.get(0.0)
-    game.current_round = SessionProperty.GAME_ROUND_NUMBER.get(1)
     game_service.save(game)
 
 
@@ -94,16 +92,15 @@ def game_settings():
 @auth_required
 @in_game
 def round_result(nr: int):
-    SessionProperty.GAME_ROUND_NUMBER.set(SessionProperty.GAME_ROUND_NUMBER.get(1) + 1)
+
     game: Game = data.game
     coords = game.coords[nr - 1]
     if not coords.is_finished:
-        coords.is_finished = True;
+        game.current_round += 1
+        coords.is_finished = True
         coords_service.save(coords)
-        now = time.time()
-        print(coords.finish_time)
-        print(now)
 
+        now = time.time()
         if coords.finish_time is not None and coords.finish_time < now:
             penalty_score = 10000.0
             SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + penalty_score)
@@ -123,7 +120,8 @@ def round_result(nr: int):
             coords.lat_guessed = guessed.lat
             coords.lng_guessed = guessed.lng
             coords_service.save(coords)
-            SessionProperty.GAME_SCORE.set(SessionProperty.GAME_SCORE.get(0.0) + dist)
+            game.score += dist
+            save_game(game)
 
             return render_template('round_result.html',
                                    actual_coords=SessionProperty.GAME_ACTUAL_COORDS.get(),
@@ -193,15 +191,9 @@ def game():
 
     data.game = game
 
-    SessionProperty.GAME_SCORE.set(game.score)
-    SessionProperty.GAME_ROUND_NUMBER.set(game.current_round)
-
     if game.current_round > game.rounds_count:
         game.is_finished = True
         save_game(game)
-
-        SessionProperty.GAME.clear()
-        SessionProperty.GAME_ROUND_NUMBER.clear()
 
         return render_template('game_result.html', score=game.score)
     else:
