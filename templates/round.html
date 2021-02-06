@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Round</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
+    <script src="../static/Bing.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class="navbar-brand" href="/">Map guessing</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+            <a class="nav-link disabled" id="time" style="color: white"></a>
+        </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item ">
+            <a class="nav-link" href="/logout">Logout</a>
+        </li>
+    </ul>
+</nav>
+<main role="main" class="container">
+    <div>
+        <div class="d-flex justify-content-center">
+            <div id="mapRandom" style="width: 1000px; height: 700px;"></div>
+        </div>
+        <form id="mainForm" method=post>
+            <input type="hidden" id="selectedCoords" name="selectedCoords">
+            <div class="d-flex justify-content-center">
+                <div id="mapWorld" style="width: 1000px; height: 700px;">
+                    <div class="p-3 mb-2 bg-dark text-white" style="position: absolute;
+  top: 20px;
+  left: 45px;
+  padding: 10px;
+  z-index: 500;
+    opacity: 0.7">Place your guess</div>
+                    <input class="btn btn-primary" id="submitButton" onclick="event.stopPropagation()" type="submit" value="Submit" style="display: none; position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px;
+  z-index: 500;">
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+<script>
+    const coords = L.latLng({{ coords.lat }}, {{ coords.lng }})
+    const map = L.map('mapRandom', {
+        drawControl: true,
+        maxBoundsViscosity: 1.0
+    }).setView(coords, {{ zoom }});
+
+    const imagerySet = {% if labels_enabled %} 'AerialWithLabelsOnDemand' {% else %} 'Aerial' {% endif %}
+
+    const bing = new L.BingLayer("{{ bing_key }}", {imagerySet: imagerySet});
+    map.addLayer(bing);
+    map.dragging.disable();
+    map.touchZoom.disable();
+    map.doubleClickZoom.disable();
+    map.scrollWheelZoom.disable();
+    map.boxZoom.disable();
+    map.keyboard.disable();
+    $(".leaflet-control-zoom").css("visibility", "hidden");
+    L.marker().setLatLng(coords).addTo(map);
+
+    const mapWorld = L.map('mapWorld', {
+        drawControl: true,
+        maxBoundsViscosity: 1.0
+    }).setView(L.latLng(0, 0), 2);
+
+    const bing2 = new L.BingLayer("{{ bing_key }}", {imagerySet: 'Aerial'});
+    mapWorld.addLayer(bing2);
+
+    const marker = L.marker();
+
+    function onMapClick(e) {
+        marker.setLatLng(e.latlng).addTo(mapWorld);
+        document.getElementById('selectedCoords').value = e.latlng.toString()
+        document.getElementById('submitButton').style.display = 'block'
+    }
+
+    mapWorld.on('click', onMapClick);
+
+    function startTimer(duration, display) {
+        var timer = duration, minutes, seconds;
+        setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.text(minutes + ":" + seconds);
+
+            if (--timer < 0) {
+                document.getElementById('selectedCoords').value = 'no_result'
+                document.getElementById('mainForm').submit()
+            }
+        }, 1000);
+    }
+
+        jQuery(function ($) {
+            const seconds  = {{ time_limit }},
+                display = $('#time');
+            startTimer(seconds, display);
+        });
+
+        $.post( window.location.href + "/time" );
+</script>
+</body>
+</html>

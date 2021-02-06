@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class="navbar-brand" href="/">Map guessing</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/game">Ranked game</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/game-settings">Custom game</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item ">
+            <a class="nav-link" href="/logout">Logout</a>
+        </li>
+    </ul>
+</nav>
+
+<h3 class="h3 text-center">Leaderboard</h3>
+<div class="d-flex justify-content-center">
+    <div class="card w-75">
+
+    <table class="table table-striped">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">User</th>
+            <th scope="col">Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in entries %}
+            <tr>
+                <th scope="row">{{ entry.no }}</th>
+                <td>{{ entry.username }}</td>
+                <td>{{ entry.score }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+</body>
+</html>

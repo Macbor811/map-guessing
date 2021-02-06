@@ -1,0 +1,58 @@
+<html>
+
+<head>
+    <title>Custom game</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style type="text/css">
+        .login-form {
+            width: 400px;
+            margin: 50px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class="navbar-brand" href="/">Map guessing</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/game">Ranked game</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/game-settings">Custom game</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item ">
+            <a class="nav-link" href="/logout">Logout</a>
+        </li>
+    </ul>
+    </nav>
+    <h3 class="h3 text-center">Custom game</h3>
+    <div class="jumbotron login-form">
+        <form method=post action="/game-settings">
+        <div class="form-group">
+            Number of rounds: <input class="form-control" type=number name=roundsCount min="1" max="10" value="5">
+        </div>
+        <div class="form-group">
+            Zoom level: <input class="form-control" type=number name=zoom min="0" max="18" value="9">
+        </div>
+        <div class="form-group">
+            Time limit [s]: <input class="form-control" type=number name=timeLimit min="5" max="3600" value="30">
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type=checkbox name=labelsEnabled>
+            <label class="form-check-label" for="labelsEnabled">Labels enabled</label>
+        </div>
+        <div class="form-group">
+           <input class="btn btn-primary btn-block"  value="Start" type=submit>
+        </div>
+    </form>
+    <label>{{message or ''}}</label>
+    </div>
+</body>
+
+</html>
